@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifthunter Mini App</title>
+    <!-- Telegram WebApp JS SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #1a1a2e);
+            color: var(--tg-theme-text-color, #ffffff);
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .balance-title {
+            font-size: 14px;
+            color: #8a8d93;
+            margin-bottom: 8px;
+        }
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00fff0;
+        }
+        .cases-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .case-card {
+            background-color: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .case-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+        .case-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .btn-open {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-open:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Balans Kartochkasi -->
+    <div class="balance-card">
+        <div class="balance-title">Mening Balansim</div>
+        <div class="balance-amount" id="balance">1,000 STAR</div>
+    </div>
+
+    <!-- Keyslar Bo'limi -->
+    <h3 style="text-align: left; margin-bottom: 12px;">Mavjud Keyslar</h3>
+    <div class="cases-container">
+        
+        <div class="case-card">
+            <div class="case-icon">🎁</div>
+            <div class="case-title">Omadli Case</div>
+            <button class="btn-open" onclick="openCase('Omadli Case', 100)">100 STAR</button>
+        </div>
+
+        <div class="case-card">
+            <div class="case-icon">💎</div>
+            <div class="case-title">VIP Case</div>
+            <button class="btn-open" onclick="openCase('VIP Case', 500)">500 STAR</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Telegram WebApp obyektini tashabbuslashtirish
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Oynani to'liq ekranga yozish
+
+        let balance = 1000;
+
+        function openCase(caseName, price) {
+            if (balance >= price) {
+                balance -= price;
+                document.getElementById('balance').innerText = balance.toLocaleString() + ' STAR';
+                tg.showAlert(`🎉 Tabriklaymiz! Siz ${caseName} keysini ochdingiz!`);
+            } else {
+                tg.showAlert('❌ Mablag\' yetarli emas!');
+            }
+        }
+    </script>
+</body>
+</html>
