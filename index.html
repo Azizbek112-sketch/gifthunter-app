@@ -6,325 +6,166 @@
     <title>Gift Spinner Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; user-select: none; }
+        body { background-color: #121318; color: #ffffff; padding-bottom: 70px; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #121318; position: sticky; top: 0; z-index: 10; }
+        .menu-icon { font-size: 22px; cursor: pointer; }
+        .balance-container { display: flex; align-items: center; background: #1c1e24; padding: 6px 12px; border-radius: 20px; gap: 10px; border: 1px solid #2a2d37; }
+        .balance-item { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; }
+        
+        /* Sidebar Menu */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #17181c; color: #fff; transition: 0.3s ease-in-out; z-index: 1000; padding: 20px; }
+        .sidebar.active { left: 0; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 999; }
+        .overlay.active { display: block; }
+        .user-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .avatar { width: 45px; height: 45px; background: #26a69a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .menu-list { list-style: none; margin-top: 15px; }
+        .menu-list li { padding: 12px; background: #202228; margin-bottom: 8px; border-radius: 10px; cursor: pointer; font-size: 14px; }
 
-        body {
-            background-color: #121318;
-            color: #ffffff;
-            padding-bottom: 70px;
-        }
-
-        /* Top Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background-color: #121318;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .menu-icon {
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .balance-container {
-            display: flex;
-            align-items: center;
-            background: #1c1e24;
-            padding: 6px 12px;
-            border-radius: 20px;
-            gap: 10px;
-            border: 1px solid #2a2d37;
-        }
-
-        .balance-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .wallet-btn {
-            background: #2a2d37;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        /* Banner Card */
-        .cashback-card {
-            background: linear-gradient(135deg, #1e2029 0%, #171820 100%);
-            margin: 10px 16px;
-            padding: 16px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #2a2d37;
-        }
-
-        .cashback-text h3 {
-            font-size: 16px;
-            color: #a0a5b5;
-        }
-
-        .cashback-text .coins {
-            font-size: 24px;
-            font-weight: bold;
-            color: #fbc02d;
-            margin: 4px 0;
-        }
-
-        .cashback-text span {
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        /* Category Filter Tabs */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            padding: 8px 16px;
-            overflow-x: auto;
-        }
-
-        .tab {
-            background: #1c1e24;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #8e94a5;
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .tab.active {
-            background: #2b2f3e;
-            color: #ffffff;
-        }
+        /* Pages */
+        .page { display: none; padding: 16px; }
+        .page.active { display: block; }
 
         /* Grid Cards */
-        .section-title {
-            padding: 12px 16px 8px;
-            font-size: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .case-card { background: #1c1e24; border-radius: 16px; padding: 12px; text-align: center; border: 1px solid #2a2d37; cursor: pointer; }
+        .case-price { background: #252834; padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-top: 8px; }
 
-        .section-title span {
-            font-size: 12px;
-            color: #6b7280;
-        }
+        /* Case Contents List */
+        .content-item { display: flex; justify-content: space-between; align-items: center; background: #1c1e24; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 0 16px;
-        }
-
-        .case-card {
-            background: #1c1e24;
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #2a2d37;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .case-card:active {
-            transform: scale(0.98);
-        }
-
-        .case-img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 8px;
-        }
-
-        .case-title {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .case-price {
-            background: #252834;
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        /* Bottom Navigation Bar */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #16171e;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #222530;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-            color: #6b7280;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .nav-item.active {
-            color: #fbc02d;
-        }
-
-        .nav-icon {
-            font-size: 18px;
-        }
+        /* Bottom Nav */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #16171e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222530; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: #6b7280; cursor: pointer; }
+        .nav-item.active { color: #fbc02d; }
     </style>
 </head>
 <body>
 
+    <!-- Overlay & Sidebar -->
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">AZ</div>
+            <div>
+                <h4 id="userName">Azizbek</h4>
+                <p style="font-size: 11px; color: #888;" id="userId">ID: 8202378013</p>
+            </div>
+        </div>
+        <ul class="menu-list">
+            <li onclick="alert('Inventory')">📦 Inventory</li>
+            <li onclick="alert('Referral')">👥 Referral system</li>
+            <li onclick="alert('Promo')">🎟️ Promo code</li>
+            <li onclick="alert('Top up')">👛 Top up balance</li>
+            <li onclick="alert('Support')">🎧 Support</li>
+        </ul>
+    </div>
+
     <!-- Header -->
     <div class="header">
-        <div class="menu-icon">☰</div>
+        <div class="menu-icon" onclick="toggleSidebar()">☰</div>
         <div class="balance-container">
-            <div class="balance-item"><span style="color: #29b6f6;">💎</span> <span id="ton-bal">0</span></div>
-            <div class="balance-item"><span style="color: #fbc02d;">⭐</span> <span id="star-bal">3</span></div>
-            <button class="wallet-btn">👛</button>
+            <div class="balance-item">💎 <span>0</span></div>
+            <div class="balance-item">⭐ <span>3</span></div>
         </div>
     </div>
 
-    <!-- Banner -->
-    <div class="cashback-card">
-        <div style="font-size: 50px;">🥭</div>
-        <div class="cashback-text">
-            <h3>Cash Back</h3>
-            <div class="coins">50 ⭐</div>
-            <span>Learn more &gt;</span>
+    <!-- MAIN PAGE: CASES -->
+    <div id="page-cases" class="page active">
+        <h3 style="margin-bottom: 12px;">MIX cases</h3>
+        <div class="grid">
+            <div class="case-card" onclick="openCase('COLD MINIMUM')">
+                <div style="font-size: 40px;">🎭</div>
+                <b>COLD MINIMUM</b>
+                <div class="case-price">💎 0.23 | ⭐ 25</div>
+            </div>
+            <div class="case-card" onclick="openCase('NICE WIN')">
+                <div style="font-size: 40px;">🍏</div>
+                <b>NICE WIN</b>
+                <div class="case-price">💎 0.6 | ⭐ 65</div>
+            </div>
         </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="tabs">
-        <button class="tab active" onclick="switchCategory('mix')">Mix</button>
-        <button class="tab" onclick="switchCategory('free')">Free</button>
-        <button class="tab" onclick="switchCategory('hot')">Hot</button>
-        <button class="tab" onclick="switchCategory('unique')">Unique</button>
+    <!-- CASE DETAILS PAGE -->
+    <div id="page-case-view" class="page">
+        <button onclick="showPage('page-cases')" style="background: #252834; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;">&lt; Back</button>
+        <h2 id="case-title" style="margin-bottom: 16px;">Case Name</h2>
+        <h4 style="margin-bottom: 8px; color: #aaa;">Case contents:</h4>
+        <div id="case-contents">
+            <!-- Items loaded via JS -->
+        </div>
     </div>
 
-    <!-- Cases List -->
-    <div class="section-title">
-        <span id="cat-title">Mix cases</span>
-        <span>Stars and NFTs (Random)</span>
-    </div>
+    <!-- OTHER PAGES -->
+    <div id="page-rocket" class="page"><h2>🚀 Rocket Game</h2><p>Tez kunda...</p></div>
+    <div id="page-pepecrash" class="page"><h2>🐸 PepeCrash</h2><p>Tez kunda...</p></div>
+    <div id="page-slots" class="page"><h2>🎰 Slots</h2><p>Tez kunda...</p></div>
+    <div id="page-upgrade" class="page"><h2>⚒️ Upgrade</h2><p>Tez kunda...</p></div>
 
-    <div class="grid" id="cases-grid">
-        <!-- Javascript orqali kartochkalar tushadi -->
-    </div>
-
-    <!-- Bottom Navigation -->
+    <!-- Bottom Nav -->
     <div class="nav-bar">
-        <div class="nav-item active">
-            <div class="nav-icon">🎁</div>
-            <div>Cases</div>
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">🚀</div>
-            <div>Rocket</div>
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">🐸</div>
-            <div>PepeCrash</div>
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">🎰</div>
-            <div>Slots</div>
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">⚒️</div>
-            <div>Upgrade</div>
-        </div>
+        <div class="nav-item active" onclick="navTo('page-cases', this)"><div>🎁</div><div>Cases</div></div>
+        <div class="nav-item" onclick="navTo('page-rocket', this)"><div>🚀</div><div>Rocket</div></div>
+        <div class="nav-item" onclick="navTo('page-pepecrash', this)"><div>🐸</div><div>PepeCrash</div></div>
+        <div class="nav-item" onclick="navTo('page-slots', this)"><div>🎰</div><div>Slots</div></div>
+        <div class="nav-item" onclick="navTo('page-upgrade', this)"><div>⚒️</div><div>Upgrade</div></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        const casesData = [
-            { name: "COLD MINIMUM", price: "0.23 💎 | 25 ⭐", img: "🎭", type: "mix" },
-            { name: "NICE WIN", price: "0.6 💎 | 65 ⭐", img: "🍏", type: "mix" },
-            { name: "TON ENTHUSIAST", price: "2.02 💎 | 217 ⭐", img: "🔮", type: "mix" },
-            { name: "SHEIKH PAUL", price: "3.21 💎 | 346 ⭐", img: "🦸‍♂️", type: "mix" },
-            { name: "TOP UP BALANCE", price: "Free", img: "💪", type: "free" },
-            { name: "WATCH ADS", price: "Free", img: "🎁", type: "free" }
+        // User info from Telegram
+        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('userName').innerText = tg.initDataUnsafe.user.first_name;
+            document.getElementById('userId').innerText = 'ID: ' + tg.initDataUnsafe.user.id;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function navTo(pageId, el) {
+            showPage(pageId);
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        const caseItems = [
+            { name: "Signet Ring", price: "4.03K ⭐", icon: "👑" },
+            { name: "Diamond Ring", price: "3.36K ⭐", icon: "💍" },
+            { name: "Ionic Dryer", price: "2.08K ⭐", icon: "🔌" },
+            { name: "Lunar Snake", price: "420 ⭐", icon: "🐍" },
+            { name: "Candy Cane", price: "409 ⭐", icon: "🍬" },
+            { name: "Ice Cream", price: "400 ⭐", icon: "🍦" }
         ];
 
-        function renderCases(category) {
-            const grid = document.getElementById("cases-grid");
-            grid.innerHTML = "";
+        function openCase(title) {
+            document.getElementById('case-title').innerText = title;
+            const container = document.getElementById('case-contents');
+            container.innerHTML = '';
             
-            const filtered = category === 'mix' ? casesData : casesData.filter(c => c.type === category);
-            
-            filtered.forEach(item => {
-                const card = document.createElement("div");
-                card.className = "case-card";
-                card.innerHTML = `
-                    <div style="font-size: 50px; margin-bottom: 8px;">${item.img}</div>
-                    <div class="case-title">${item.name}</div>
-                    <div class="case-price">${item.price}</div>
+            caseItems.forEach(item => {
+                container.innerHTML += `
+                    <div class="content-item">
+                        <div><span>${item.icon}</span> <b>${item.name}</b></div>
+                        <div style="color: #fbc02d; font-weight: bold;">${item.price}</div>
+                    </div>
                 `;
-                card.onclick = () => {
-                    tg.showAlert(`${item.name} keysi tanlandi!`);
-                };
-                grid.appendChild(card);
             });
+            showPage('page-case-view');
         }
-
-        function switchCategory(cat) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('cat-title').innerText = cat.toUpperCase() + " cases";
-            renderCases(cat);
-        }
-
-        // Boshlanishida barchasini yuklash
-        renderCases('mix');
     </script>
 </body>
 </html>
+
