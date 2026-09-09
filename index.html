@@ -2,115 +2,329 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gifthunter Mini App</title>
-    <!-- Telegram WebApp JS SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gift Spinner Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #1a1a2e);
-            color: var(--tg-theme-text-color, #ffffff);
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 16px;
-            text-align: center;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
         }
-        .balance-card {
-            background: linear-gradient(135deg, #0f3460, #16213e);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+
+        body {
+            background-color: #121318;
+            color: #ffffff;
+            padding-bottom: 70px;
         }
-        .balance-title {
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #121318;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .balance-container {
+            display: flex;
+            align-items: center;
+            background: #1c1e24;
+            padding: 6px 12px;
+            border-radius: 20px;
+            gap: 10px;
+            border: 1px solid #2a2d37;
+        }
+
+        .balance-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
             font-size: 14px;
-            color: #8a8d93;
-            margin-bottom: 8px;
+            font-weight: 600;
         }
-        .balance-amount {
-            font-size: 32px;
-            font-weight: bold;
-            color: #00fff0;
+
+        .wallet-btn {
+            background: #2a2d37;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
-        .cases-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        .case-card {
-            background-color: #16213e;
-            border: 1px solid #0f3460;
-            border-radius: 12px;
+
+        /* Banner Card */
+        .cashback-card {
+            background: linear-gradient(135deg, #1e2029 0%, #171820 100%);
+            margin: 10px 16px;
             padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #2a2d37;
+        }
+
+        .cashback-text h3 {
+            font-size: 16px;
+            color: #a0a5b5;
+        }
+
+        .cashback-text .coins {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fbc02d;
+            margin: 4px 0;
+        }
+
+        .cashback-text span {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Category Filter Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            background: #1c1e24;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #8e94a5;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: #2b2f3e;
+            color: #ffffff;
+        }
+
+        /* Grid Cards */
+        .section-title {
+            padding: 12px 16px 8px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .section-title span {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 16px;
+        }
+
+        .case-card {
+            background: #1c1e24;
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #2a2d37;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        .case-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-        }
-        .case-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .btn-open {
-            background-color: #e94560;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            width: 100%;
             cursor: pointer;
+            transition: transform 0.1s;
         }
-        .btn-open:active {
+
+        .case-card:active {
             transform: scale(0.98);
+        }
+
+        .case-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .case-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .case-price {
+            background: #252834;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        /* Bottom Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #16171e;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #222530;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #fbc02d;
+        }
+
+        .nav-icon {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Balans Kartochkasi -->
-    <div class="balance-card">
-        <div class="balance-title">Mening Balansim</div>
-        <div class="balance-amount" id="balance">1,000 STAR</div>
+    <!-- Header -->
+    <div class="header">
+        <div class="menu-icon">☰</div>
+        <div class="balance-container">
+            <div class="balance-item"><span style="color: #29b6f6;">💎</span> <span id="ton-bal">0</span></div>
+            <div class="balance-item"><span style="color: #fbc02d;">⭐</span> <span id="star-bal">3</span></div>
+            <button class="wallet-btn">👛</button>
+        </div>
     </div>
 
-    <!-- Keyslar Bo'limi -->
-    <h3 style="text-align: left; margin-bottom: 12px;">Mavjud Keyslar</h3>
-    <div class="cases-container">
-        
-        <div class="case-card">
-            <div class="case-icon">🎁</div>
-            <div class="case-title">Omadli Case</div>
-            <button class="btn-open" onclick="openCase('Omadli Case', 100)">100 STAR</button>
+    <!-- Banner -->
+    <div class="cashback-card">
+        <div style="font-size: 50px;">🥭</div>
+        <div class="cashback-text">
+            <h3>Cash Back</h3>
+            <div class="coins">50 ⭐</div>
+            <span>Learn more &gt;</span>
         </div>
+    </div>
 
-        <div class="case-card">
-            <div class="case-icon">💎</div>
-            <div class="case-title">VIP Case</div>
-            <button class="btn-open" onclick="openCase('VIP Case', 500)">500 STAR</button>
+    <!-- Filter Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchCategory('mix')">Mix</button>
+        <button class="tab" onclick="switchCategory('free')">Free</button>
+        <button class="tab" onclick="switchCategory('hot')">Hot</button>
+        <button class="tab" onclick="switchCategory('unique')">Unique</button>
+    </div>
+
+    <!-- Cases List -->
+    <div class="section-title">
+        <span id="cat-title">Mix cases</span>
+        <span>Stars and NFTs (Random)</span>
+    </div>
+
+    <div class="grid" id="cases-grid">
+        <!-- Javascript orqali kartochkalar tushadi -->
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar">
+        <div class="nav-item active">
+            <div class="nav-icon">🎁</div>
+            <div>Cases</div>
         </div>
-
+        <div class="nav-item">
+            <div class="nav-icon">🚀</div>
+            <div>Rocket</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🐸</div>
+            <div>PepeCrash</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🎰</div>
+            <div>Slots</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">⚒️</div>
+            <div>Upgrade</div>
+        </div>
     </div>
 
     <script>
-        // Telegram WebApp obyektini tashabbuslashtirish
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Oynani to'liq ekranga yozish
+        tg.ready();
+        tg.expand();
 
-        let balance = 1000;
+        const casesData = [
+            { name: "COLD MINIMUM", price: "0.23 💎 | 25 ⭐", img: "🎭", type: "mix" },
+            { name: "NICE WIN", price: "0.6 💎 | 65 ⭐", img: "🍏", type: "mix" },
+            { name: "TON ENTHUSIAST", price: "2.02 💎 | 217 ⭐", img: "🔮", type: "mix" },
+            { name: "SHEIKH PAUL", price: "3.21 💎 | 346 ⭐", img: "🦸‍♂️", type: "mix" },
+            { name: "TOP UP BALANCE", price: "Free", img: "💪", type: "free" },
+            { name: "WATCH ADS", price: "Free", img: "🎁", type: "free" }
+        ];
 
-        function openCase(caseName, price) {
-            if (balance >= price) {
-                balance -= price;
-                document.getElementById('balance').innerText = balance.toLocaleString() + ' STAR';
-                tg.showAlert(`🎉 Tabriklaymiz! Siz ${caseName} keysini ochdingiz!`);
-            } else {
-                tg.showAlert('❌ Mablag\' yetarli emas!');
-            }
+        function renderCases(category) {
+            const grid = document.getElementById("cases-grid");
+            grid.innerHTML = "";
+            
+            const filtered = category === 'mix' ? casesData : casesData.filter(c => c.type === category);
+            
+            filtered.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "case-card";
+                card.innerHTML = `
+                    <div style="font-size: 50px; margin-bottom: 8px;">${item.img}</div>
+                    <div class="case-title">${item.name}</div>
+                    <div class="case-price">${item.price}</div>
+                `;
+                card.onclick = () => {
+                    tg.showAlert(`${item.name} keysi tanlandi!`);
+                };
+                grid.appendChild(card);
+            });
         }
+
+        function switchCategory(cat) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('cat-title').innerText = cat.toUpperCase() + " cases";
+            renderCases(cat);
+        }
+
+        // Boshlanishida barchasini yuklash
+        renderCases('mix');
     </script>
 </body>
 </html>
