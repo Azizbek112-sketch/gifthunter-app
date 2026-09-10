@@ -7,37 +7,45 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; user-select: none; }
-        body { background-color: #121318; color: #ffffff; padding-bottom: 70px; }
+        body { background-color: #121318; color: #ffffff; padding-bottom: 80px; }
         
-        /* Header & Balance */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; position: sticky; top: 0; background: #121318; z-index: 10; }
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #121318; position: sticky; top: 0; z-index: 10; }
         .balance-container { display: flex; align-items: center; background: #1c1e24; padding: 6px 12px; border-radius: 20px; gap: 10px; border: 1px solid #2a2d37; }
         .balance-item { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; }
         
-        .mode-toggle { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
-        .mode-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid #2a2d37; background: #1c1e24; color: #fff; cursor: pointer; font-size: 13px; }
-        .mode-btn.active { background: #fbc02d; color: #000; font-weight: bold; }
+        /* Mode Switcher (TON / STARS / Demo) */
+        .mode-container { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: 15px; }
+        .tab-switch { display: flex; background: #1c1e24; border-radius: 20px; padding: 3px; border: 1px solid #2a2d37; }
+        .tab-btn { padding: 6px 14px; border-radius: 18px; border: none; background: transparent; color: #888; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .tab-btn.active { background: #fbc02d; color: #000; }
+        
+        .demo-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #aaa; }
 
-        /* Pages */
-        .page { display: none; padding: 16px; }
-        .page.active { display: block; }
+        /* SLOTS GRID (Videodagidek 4x3 kataklar) */
+        .slots-container { padding: 0 16px; }
+        .slots-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #1c1e24; padding: 12px; border-radius: 16px; border: 1px solid #2a2d37; }
+        .slot-box { background: #121318; height: 60px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid #2a2d37; transition: transform 0.1s; }
+        .slot-box.win { border-color: #fbc02d; background: #2b2716; animation: pulse 0.5s infinite alternate; }
 
-        /* Cases Reel UI */
-        .case-wrapper { position: relative; width: 100%; height: 110px; background: #1c1e24; border-radius: 12px; border: 1px solid #2a2d37; overflow: hidden; margin: 15px 0; }
-        .case-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: #fbc02d; z-index: 5; }
-        .case-reel { display: flex; position: absolute; left: 0; top: 10px; transition: transform 3s cubic-bezier(0.15, 0.85, 0.35, 1.2); }
-        .case-item { width: 80px; height: 90px; background: #121318; margin: 0 5px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #2a2d37; flex-shrink: 0; }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
 
-        /* Slots Grid UI */
-        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #1c1e24; padding: 15px; border-radius: 16px; border: 1px solid #2a2d37; }
-        .slot-box { background: #121318; height: 75px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 34px; border: 1px solid #2a2d37; overflow: hidden; }
+        /* SPIN BUTTON */
+        .spin-btn { width: calc(100% - 32px); margin: 15px 16px; background: #fbc02d; color: #000; border: none; padding: 14px; border-radius: 14px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .spin-btn:disabled { opacity: 0.5; }
 
-        /* Buttons */
-        .main-btn { width: 100%; background: #fbc02d; color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
-        .main-btn:disabled { opacity: 0.5; }
+        /* Lines & Prices */
+        .control-panel { padding: 0 16px; margin-top: 10px; }
+        .panel-title { font-size: 12px; color: #888; margin-bottom: 6px; }
+        .panel-options { display: flex; gap: 8px; margin-bottom: 12px; }
+        .opt-btn { flex: 1; padding: 10px; background: #1c1e24; border: 1px solid #2a2d37; border-radius: 10px; color: #fff; text-align: center; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .opt-btn.active { background: #fbc02d; color: #000; border-color: #fbc02d; }
 
         /* Bottom Nav */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #16171e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222530; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #16171e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222530; z-index: 20; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: #6b7280; cursor: pointer; }
         .nav-item.active { color: #fbc02d; }
     </style>
@@ -52,114 +60,129 @@
         </div>
     </div>
 
-    <div class="mode-toggle">
-        <button class="mode-btn active" id="realModeBtn" onclick="setMode('real')">Stars ⭐</button>
-        <button class="mode-btn" id="demoModeBtn" onclick="setMode('demo')">Demo 🎮</button>
-    </div>
-
-    <!-- CASES PAGE -->
-    <div id="page-cases" class="page active">
-        <h3>🎁 Cases</h3>
-        <div class="case-wrapper">
-            <div class="case-pointer"></div>
-            <div class="case-reel" id="caseReel"></div>
+    <div class="mode-container">
+        <div class="tab-switch">
+            <button class="tab-btn">TON</button>
+            <button class="tab-btn active">STARS</button>
         </div>
-        <button class="main-btn" id="openCaseBtn" onclick="openCase()">OPEN CASE (10 ⭐)</button>
+        <div class="demo-toggle">
+            <span>Demo</span>
+            <input type="checkbox" id="demoCheck" onchange="toggleDemo(this.checked)">
+        </div>
     </div>
 
-    <!-- SLOTS PAGE -->
-    <div id="page-slots" class="page">
-        <h3>🎰 Slots</h3>
+    <div class="slots-container">
         <div class="slots-grid">
-            <div class="slot-box" id="slot1">🎁</div>
-            <div class="slot-box" id="slot2">👑</div>
-            <div class="slot-box" id="slot3">🍦</div>
+            <div class="slot-box" id="s1">🧸</div><div class="slot-box" id="s2">🎁</div><div class="slot-box" id="s3">⭐</div><div class="slot-box" id="s4">💎</div>
+            <div class="slot-box" id="s5">⭐</div><div class="slot-box" id="s6">🧸</div><div class="slot-box" id="s7">📦</div><div class="slot-box" id="s8">🎁</div>
+            <div class="slot-box" id="s9">🎁</div><div class="slot-box" id="s10">💎</div><div class="slot-box" id="s11">📦</div><div class="slot-box" id="s12">🐈</div>
         </div>
-        <button class="main-btn" id="spinSlotsBtn" onclick="spinSlots()">SPIN (10 ⭐)</button>
     </div>
 
-    <!-- NAV BAR -->
+    <button class="spin-btn" id="spinBtn" onclick="spinSlots()">
+        SPIN 1 LINE · <span id="btnPrice">10</span> ⭐
+    </button>
+
+    <div class="control-panel">
+        <div class="panel-title">Spin price</div>
+        <div class="panel-options">
+            <div class="opt-btn active" onclick="setPrice(10, this)">10</div>
+            <div class="opt-btn" onclick="setPrice(20, this)">20</div>
+            <div class="opt-btn" onclick="setPrice(40, this)">40</div>
+            <div class="opt-btn" onclick="setPrice(80, this)">80</div>
+        </div>
+    </div>
+
+    <p id="winMsg" style="text-align: center; color: #fbc02d; font-weight: bold; margin-top: 10px;"></p>
+
     <div class="nav-bar">
-        <div class="nav-item active" onclick="navTo('page-cases', this)"><div>🎁</div><div>Cases</div></div>
-        <div class="nav-item" onclick="navTo('page-slots', this)"><div>🎰</div><div>Slots</div></div>
+        <div class="nav-item"><div>🎁</div><div>Cases</div></div>
+        <div class="nav-item"><div>🚀</div><div>Rocket</div></div>
+        <div class="nav-item active"><div>🎰</div><div>Slots</div></div>
+        <div class="nav-item"><div>⚒️</div><div>Upgrade</div></div>
     </div>
 
     <script>
         let isDemo = false;
         let stars = 50;
         let demoBalance = 1000;
-        let inventory = [];
+        let currentPrice = 10;
 
-        const items = [
-            { id: 1, name: "Gift Box", icon: "🎁", price: 15 },
-            { id: 2, name: "Crown", icon: "👑", price: 50 },
-            { id: 3, name: "Ice Cream", icon: "🍦", price: 10 },
-            { id: 4, name: "Teddy", icon: "🧸", price: 25 }
+        const gifts = [
+            { icon: "🧸", name: "Bear", price: 15 },
+            { icon: "🎁", name: "Gift Box", price: 25 },
+            { icon: "⭐", name: "Stars", price: 5 },
+            { icon: "💎", name: "Diamond", price: 50 },
+            { icon: "📦", name: "Chest", price: 30 },
+            { icon: "🐈", name: "Cat", price: 100 }
         ];
 
-        function setMode(mode) {
-            isDemo = (mode === 'demo');
-            document.getElementById('realModeBtn').classList.toggle('active', !isDemo);
-            document.getElementById('demoModeBtn').classList.toggle('active', isDemo);
-            updateBalanceUI();
+        function toggleDemo(val) {
+            isDemo = val;
+            document.getElementById('winMsg').innerText = isDemo ? "🎮 Demo rejim yoqildi" : "";
         }
 
-        function updateBalanceUI() {
-            document.getElementById('starsCount').innerText = isDemo ? demoBalance : stars;
-        }
-
-        function navTo(pageId, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        function setPrice(price, el) {
+            currentPrice = price;
+            document.getElementById('btnPrice').innerText = price;
+            document.querySelectorAll('.panel-options .opt-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-        }
-
-        // Init Case Reel
-        const reel = document.getElementById('caseReel');
-        function initReel() {
-            reel.innerHTML = '';
-            for(let i=0; i<30; i++) {
-                const item = items[Math.floor(Math.random()*items.length)];
-                reel.innerHTML += `<div class="case-item"><span style="font-size:28px">${item.icon}</span><span style="font-size:10px">${item.name}</span></div>`;
-            }
-        }
-        initReel();
-
-        function openCase() {
-            let bal = isDemo ? demoBalance : stars;
-            if(bal < 10) return alert("Balans yetarli emas!");
-
-            if(isDemo) demoBalance -= 10; else stars -= 10;
-            updateBalanceUI();
-
-            const btn = document.getElementById('openCaseBtn');
-            btn.disabled = true;
-
-            const randomShift = Math.floor(Math.random() * 1500) + 800;
-            reel.style.transform = `translateX(-${randomShift}px)`;
-
-            setTimeout(() => {
-                btn.disabled = false;
-                alert("Case ochildi!");
-            }, 3200);
         }
 
         function spinSlots() {
             let bal = isDemo ? demoBalance : stars;
-            if(bal < 10) return alert("Balans yetarli emas!");
+            if(bal < currentPrice) {
+                alert("Balans yetarli emas!");
+                return;
+            }
 
-            if(isDemo) demoBalance -= 10; else stars -= 10;
-            updateBalanceUI();
+            if(isDemo) demoBalance -= currentPrice; else stars -= currentPrice;
+            document.getElementById('starsCount').innerText = isDemo ? demoBalance : stars;
 
-            let spins = 0;
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            document.getElementById('winMsg').innerText = "Aylanmoqda...";
+
+            // Reset win styles
+            for(let i=1; i<=12; i++) {
+                document.getElementById('s' + i).classList.remove('win');
+            }
+
+            let count = 0;
             const timer = setInterval(() => {
-                document.getElementById('slot1').innerText = items[Math.floor(Math.random()*items.length)].icon;
-                document.getElementById('slot2').innerText = items[Math.floor(Math.random()*items.length)].icon;
-                document.getElementById('slot3').innerText = items[Math.floor(Math.random()*items.length)].icon;
-                spins++;
-                if(spins > 12) clearInterval(timer);
-            }, 80);
+                for(let i=1; i<=12; i++) {
+                    const rnd = gifts[Math.floor(Math.random() * gifts.length)];
+                    document.getElementById('s' + i).innerText = rnd.icon;
+                }
+                count++;
+
+                if(count > 15) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    checkWin();
+                }
+            }, 70);
+        }
+
+        function checkWin() {
+            // Random win generation for Demo/Real
+            const isWin = Math.random() < 0.4; // 40% yutish ehtimoli
+
+            if(isWin) {
+                const winGift = gifts[Math.floor(Math.random() * gifts.length)];
+                // Kataklardan 3 tasiga bir xil yutuqni chiqarish (bitta qatorga)
+                document.getElementById('s5').innerText = winGift.icon;
+                document.getElementById('s6').innerText = winGift.icon;
+                document.getElementById('s7').innerText = winGift.icon;
+
+                document.getElementById('s5').classList.add('win');
+                document.getElementById('s6').classList.add('win');
+                document.getElementById('s7').classList.add('win');
+
+                document.getElementById('winMsg').innerText = `🎉 TABRIKLAYMIZ! 3x ${winGift.icon} tushdi va Inventarga qo'shildi!`;
+            } else {
+                document.getElementById('winMsg').innerText = "Afsuski, omad kelmadi!";
+            }
         }
     </script>
 </body>
