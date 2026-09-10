@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Gift Spinner Mini App</title>
+    <title>Gift Hunter App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; user-select: none; }
@@ -29,13 +29,18 @@
         .page { display: none; padding: 16px; }
         .page.active { display: block; }
 
-        /* Grid Cards */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .case-card { background: #1c1e24; border-radius: 16px; padding: 12px; text-align: center; border: 1px solid #2a2d37; cursor: pointer; }
-        .case-price { background: #252834; padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-top: 8px; }
+        /* Slots Game UI */
+        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #1c1e24; padding: 15px; border-radius: 16px; border: 1px solid #2a2d37; margin-bottom: 15px; }
+        .slot-box { background: #121318; height: 70px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1px solid #2a2d37; }
+        .spin-btn { width: 100%; background: #fbc02d; color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .spin-btn:disabled { opacity: 0.5; }
 
-        /* Case Contents List */
-        .content-item { display: flex; justify-content: space-between; align-items: center; background: #1c1e24; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+        /* Inventory UI */
+        .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .inv-card { background: #1c1e24; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a2d37; }
+        .inv-actions { display: flex; gap: 6px; margin-top: 8px; }
+        .btn-sell { flex: 1; background: #e53935; color: #fff; border: none; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-withdraw { flex: 1; background: #4caf50; color: #fff; border: none; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         /* Bottom Nav */
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #16171e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222530; }
@@ -56,10 +61,10 @@
             </div>
         </div>
         <ul class="menu-list">
-            <li onclick="alert('Inventory')">📦 Inventory</li>
-            <li onclick="alert('Referral')">👥 Referral system</li>
-            <li onclick="alert('Promo')">🎟️ Promo code</li>
-            <li onclick="alert('Top up')">👛 Top up balance</li>
+            <li onclick="navTo('page-inventory')">📦 Inventory</li>
+            <li onclick="alert('Referral system')">👥 Referral system</li>
+            <li onclick="alert('Promo code')">🎟️ Promo code</li>
+            <li onclick="alert('Top up balance')">👛 Top up balance</li>
             <li onclick="alert('Support')">🎧 Support</li>
         </ul>
     </div>
@@ -68,50 +73,43 @@
     <div class="header">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
         <div class="balance-container">
-            <div class="balance-item">💎 <span>0</span></div>
-            <div class="balance-item">⭐ <span>3</span></div>
+            <div class="balance-item">💎 <span id="gemsCount">0</span></div>
+            <div class="balance-item">⭐ <span id="starsCount">50</span></div>
         </div>
     </div>
 
-    <!-- MAIN PAGE: CASES -->
-    <div id="page-cases" class="page active">
-        <h3 style="margin-bottom: 12px;">MIX cases</h3>
-        <div class="grid">
-            <div class="case-card" onclick="openCase('COLD MINIMUM')">
-                <div style="font-size: 40px;">🎭</div>
-                <b>COLD MINIMUM</b>
-                <div class="case-price">💎 0.23 | ⭐ 25</div>
-            </div>
-            <div class="case-card" onclick="openCase('NICE WIN')">
-                <div style="font-size: 40px;">🍏</div>
-                <b>NICE WIN</b>
-                <div class="case-price">💎 0.6 | ⭐ 65</div>
-            </div>
+    <!-- SLOTS PAGE -->
+    <div id="page-slots" class="page active">
+        <h3 style="margin-bottom: 12px;">🎰 Slots Game</h3>
+        <div class="slots-grid">
+            <div class="slot-box" id="slot1">🎁</div>
+            <div class="slot-box" id="slot2">👑</div>
+            <div class="slot-box" id="slot3">🍦</div>
         </div>
+        <button class="spin-btn" id="spinBtn" onclick="spinSlots()">SPIN (10 ⭐)</button>
+        <p id="slotsResult" style="margin-top: 10px; text-align: center; color: #fbc02d; font-weight: bold;"></p>
     </div>
 
-    <!-- CASE DETAILS PAGE -->
-    <div id="page-case-view" class="page">
-        <button onclick="showPage('page-cases')" style="background: #252834; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;">&lt; Back</button>
-        <h2 id="case-title" style="margin-bottom: 16px;">Case Name</h2>
-        <h4 style="margin-bottom: 8px; color: #aaa;">Case contents:</h4>
-        <div id="case-contents">
-            <!-- Items loaded via JS -->
+    <!-- INVENTORY PAGE -->
+    <div id="page-inventory" class="page">
+        <h3>📦 Inventory</h3>
+        <div id="inventoryContainer" class="inventory-grid">
+            <!-- Items added dynamically -->
         </div>
     </div>
 
     <!-- OTHER PAGES -->
+    <div id="page-cases" class="page"><h2>🎁 Cases</h2><p>Tez kunda...</p></div>
     <div id="page-rocket" class="page"><h2>🚀 Rocket Game</h2><p>Tez kunda...</p></div>
     <div id="page-pepecrash" class="page"><h2>🐸 PepeCrash</h2><p>Tez kunda...</p></div>
-    <div id="page-slots" class="page"><h2>🎰 Slots</h2><p>Tez kunda...</p></div>
     <div id="page-upgrade" class="page"><h2>⚒️ Upgrade</h2><p>Tez kunda...</p></div>
 
     <!-- Bottom Nav -->
     <div class="nav-bar">
-        <div class="nav-item active" onclick="navTo('page-cases', this)"><div>🎁</div><div>Cases</div></div>
+        <div class="nav-item" onclick="navTo('page-cases', this)"><div>🎁</div><div>Cases</div></div>
         <div class="nav-item" onclick="navTo('page-rocket', this)"><div>🚀</div><div>Rocket</div></div>
         <div class="nav-item" onclick="navTo('page-pepecrash', this)"><div>🐸</div><div>PepeCrash</div></div>
-        <div class="nav-item" onclick="navTo('page-slots', this)"><div>🎰</div><div>Slots</div></div>
+        <div class="nav-item active" onclick="navTo('page-slots', this)"><div>🎰</div><div>Slots</div></div>
         <div class="nav-item" onclick="navTo('page-upgrade', this)"><div>⚒️</div><div>Upgrade</div></div>
     </div>
 
@@ -119,10 +117,18 @@
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        // User info from Telegram
-        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('userName').innerText = tg.initDataUnsafe.user.first_name;
-            document.getElementById('userId').innerText = 'ID: ' + tg.initDataUnsafe.user.id;
+        let stars = 50;
+        let inventory = [];
+
+        const itemsList = [
+            { id: 1, name: "Gift Box", icon: "🎁", price: 15 },
+            { id: 2, name: "Crown", icon: "👑", price: 50 },
+            { id: 3, name: "Ice Cream", icon: "🍦", price: 10 },
+            { id: 4, name: "Diamond", icon: "💎", price: 30 }
+        ];
+
+        function updateBalance() {
+            document.getElementById('starsCount').innerText = stars;
         }
 
         function toggleSidebar() {
@@ -133,39 +139,98 @@
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
+            if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
         function navTo(pageId, el) {
             showPage(pageId);
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                el.classList.add('active');
+            }
+            if(pageId === 'page-inventory') renderInventory();
         }
 
-        const caseItems = [
-            { name: "Signet Ring", price: "4.03K ⭐", icon: "👑" },
-            { name: "Diamond Ring", price: "3.36K ⭐", icon: "💍" },
-            { name: "Ionic Dryer", price: "2.08K ⭐", icon: "🔌" },
-            { name: "Lunar Snake", price: "420 ⭐", icon: "🐍" },
-            { name: "Candy Cane", price: "409 ⭐", icon: "🍬" },
-            { name: "Ice Cream", price: "400 ⭐", icon: "🍦" }
-        ];
+        // Slots Logic
+        function spinSlots() {
+            if(stars < 10) {
+                alert("Stars yetarli emas!");
+                return;
+            }
 
-        function openCase(title) {
-            document.getElementById('case-title').innerText = title;
-            const container = document.getElementById('case-contents');
+            stars -= 10;
+            updateBalance();
+
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            document.getElementById('slotsResult').innerText = "Aylanmoqda...";
+
+            let spins = 0;
+            const interval = setInterval(() => {
+                const r1 = itemsList[Math.floor(Math.random() * itemsList.length)];
+                const r2 = itemsList[Math.floor(Math.random() * itemsList.length)];
+                const r3 = itemsList[Math.floor(Math.random() * itemsList.length)];
+
+                document.getElementById('slot1').innerText = r1.icon;
+                document.getElementById('slot2').innerText = r2.icon;
+                document.getElementById('slot3').innerText = r3.icon;
+
+                spins++;
+                if(spins > 10) {
+                    clearInterval(interval);
+                    spinBtn.disabled = false;
+
+                    // Win check (3 of a kind)
+                    if(r1.id === r2.id && r2.id === r3.id) {
+                        inventory.push(r1);
+                        document.getElementById('slotsResult').innerText = `🎉 YUTUQLI! ${r1.name} inventarga tushdi!`;
+                    } else {
+                        document.getElementById('slotsResult').innerText = "Afsuski, omad kelmadi. Yana urinib ko'ring!";
+                    }
+                }
+            }, 100);
+        }
+
+        // Inventory Render Logic
+        function renderInventory() {
+            const container = document.getElementById('inventoryContainer');
             container.innerHTML = '';
-            
-            caseItems.forEach(item => {
+
+            if(inventory.length === 0) {
+                container.innerHTML = `<p style="grid-column: span 2; text-align: center; color: #888;">Inventariz bo'sh</p>`;
+                return;
+            }
+
+            inventory.forEach((item, index) => {
                 container.innerHTML += `
-                    <div class="content-item">
-                        <div><span>${item.icon}</span> <b>${item.name}</b></div>
-                        <div style="color: #fbc02d; font-weight: bold;">${item.price}</div>
+                    <div class="inv-card">
+                        <div style="font-size: 35px;">${item.icon}</div>
+                        <b>${item.name}</b>
+                        <div style="font-size: 11px; color: #fbc02d; margin-top: 2px;">${item.price} ⭐</div>
+                        <div class="inv-actions">
+                            <button class="btn-sell" onclick="sellItem(${index})">Sell</button>
+                            <button class="btn-withdraw" onclick="withdrawItem(${index})">Withdraw</button>
+                        </div>
                     </div>
                 `;
             });
-            showPage('page-case-view');
+        }
+
+        function sellItem(index) {
+            stars += inventory[index].price;
+            inventory.splice(index, 1);
+            updateBalance();
+            renderInventory();
+            alert("Sovg'a sotildi va Stars balansga qo'shildi!");
+        }
+
+        function withdrawItem(index) {
+            const item = inventory[index];
+            tg.sendData(JSON.stringify({ action: "withdraw", gift: item.name }));
+            alert(`${item.name} Telegram profilingizga yuborish uchun botga so'rov yuborildi!`);
         }
     </script>
 </body>
 </html>
+
 
